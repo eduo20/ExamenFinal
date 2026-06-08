@@ -1,0 +1,13 @@
+{
+  "Bebidas": [],
+  "PlatoFuerte": [
+    {
+      "Carne": 0,
+      "Acompaniamiento1": 2,
+      "codigoproducto": "202232",
+      "nombreproducto": "Asado Lupe",
+      "precio": 100
+    }
+  ],
+  "Postres": []
+}

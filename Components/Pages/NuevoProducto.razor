@@ -1,0 +1,234 @@
+﻿@page "/ingreso-productos"
+@using ExamenFinal.Models
+@using ExamenFinal.Services
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Sistema de Gestión de Pedidos - Nuevo Producto</h3>
+        </div>
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @mensajeError
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(mensajeExito))
+            {
+                <div class="alert alert-success" role="alert">
+                    @mensajeExito
+                </div>
+            }
+
+            <form>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Código Único:</label>
+                        <input type="text" class="form-control" @bind="codigo" placeholder="Ej: PROD001" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre del Producto:</label>
+                        <input type="text" class="form-control" @bind="nombre" placeholder="Ej: Hamburguesa" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Precio Base:</label>
+                        <input type="number" step="0.01" class="form-control" @bind="precio" />
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label font-weight-bold">Tipo de Producto:</label>
+                    <select class="form-select bg-light" @bind="tipoSeleccionado">
+                        <option value="">-- Seleccione un tipo --</option>
+                        <option value="Bebida">Bebida</option>
+                        <option value="PlatoFuerte">Plato Fuerte</option>
+                        <option value="Postre">Postre</option>
+                    </select>
+                </div>
+
+                @if (tipoSeleccionado == "Bebida")
+                {
+                    <div class="card p-3 bg-light mb-3 border-info">
+                        <h5 class="text-info">Detalles de la Bebida</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Volumen (ml):</label>
+                                <input type="number" class="form-control" @bind="medidaBebida" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de Bebida:</label>
+                                <select class="form-select" @bind="tipoBebida1">
+                                    @foreach (var tipo in Enum.GetValues(typeof(Bebidas.Tipobebida)))
+                                    {
+                                        <option value="@tipo">@tipo</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (tipoSeleccionado == "PlatoFuerte")
+                {
+                    <div class="card p-3 bg-light mb-3 border-warning">
+                        <h5 class="text-warning">Detalles del Plato Fuerte</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de Carne:</label>
+                                <select class="form-select" @bind="carnePlato">
+                                    @foreach (var carne in Enum.GetValues(typeof(PlatoFuerte.TipoCarne)))
+                                    {
+                                        <option value="@carne">@carne</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Acompañamiento:</label>
+                                <select class="form-select" @bind="acompaniamientoPlato">
+                                    @foreach (var acom in Enum.GetValues(typeof(PlatoFuerte.Acompaniamiento)))
+                                    {
+                                        <option value="@acom">@acom</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (tipoSeleccionado == "Postre")
+                {
+                    <div class="card p-3 bg-light mb-3 border-success">
+                        <h5 class="text-success">Detalles del Postre</h5>
+                        <div class="row">
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="chkAzucar" @bind="contieneAzucar" />
+                                    <label class="form-check-label" for="chkAzucar">¿Contiene azúcar?</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Porción:</label>
+                                <select class="form-select" @bind="porcionPostre">
+                                    @foreach (var porc in Enum.GetValues(typeof(Postres.Tipoporcion)))
+                                    {
+                                        <option value="@porc">@porc</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-success btn-lg" @onclick="ProcesarFormulario">
+                        Guardar Producto
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    private ProductosServices servicio = new ProductosServices();
+
+    // Variables para campos comunes
+    private string codigo = string.Empty;
+    private string nombre = string.Empty;
+    private decimal precio = 0;
+    private string tipoSeleccionado = string.Empty;
+
+
+    private int medidaBebida;
+    private Bebidas.Tipobebida tipoBebida1;
+
+    private PlatoFuerte.TipoCarne carnePlato;
+    private PlatoFuerte.Acompaniamiento acompaniamientoPlato;
+
+    private bool contieneAzucar;
+    private Postres.Tipoporcion porcionPostre;
+
+
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+
+
+    private void ProcesarFormulario()
+    {
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
+
+
+        if (string.IsNullOrWhiteSpace(codigo) || string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(tipoSeleccionado))
+        {
+            mensajeError = "Seleccione un tipo de producto.";
+            return;
+        }
+
+        if (precio <= 0)
+        {
+            mensajeError = "El precio base debe ser un número positivo mayor a cero.";
+            return;
+        }
+
+        // Guardar según el tipo y aplicar validaciones específicas si aplica
+        if (tipoSeleccionado == "Bebida")
+        {
+            if (medidaBebida <= 0)
+            {
+                mensajeError = "El volumen (ml) de la bebida debe ser un número positivo.";
+                return;
+            }
+
+            Bebidas nuevaBebida = new Bebidas
+            {
+                codigoproducto = codigo,
+                nombreproducto = nombre,
+                precio = precio,
+                medida = medidaBebida,
+                tipobebida1 = tipoBebida1
+            };
+            servicio.GuardadBedbidas(nuevaBebida);
+        }
+        else if (tipoSeleccionado == "PlatoFuerte")
+        {
+            PlatoFuerte nuevoPlato = new PlatoFuerte
+            {
+                codigoproducto = codigo,
+                nombreproducto = nombre,
+                precio = precio,
+                Carne = carnePlato,
+                Acompaniamiento1 = acompaniamientoPlato
+            };
+            servicio.GuardarPlatoFuerte(nuevoPlato);
+        }
+        else if (tipoSeleccionado == "Postre")
+        {
+            Postres nuevoPostre = new Postres
+            {
+                codigoproducto = codigo,
+                nombreproducto = nombre,
+                precio = precio,
+                azucar = contieneAzucar,
+                Tipoporcion1 = porcionPostre
+            };
+            servicio.GuardarPostres(nuevoPostre);
+        }
+
+        // Si llegó hasta aquí, todo se guardó bien
+        mensajeExito = $"¡{tipoSeleccionado} guardado exitosamente y actualizado en el JSON!";
+        LimpiarFormulario();
+    }
+
+    private void LimpiarFormulario()
+    {
+        codigo = string.Empty;
+        nombre = string.Empty;
+        precio = 0;
+        tipoSeleccionado = string.Empty;
+        medidaBebida = 0;
+        contieneAzucar = false;
+    }
+}
