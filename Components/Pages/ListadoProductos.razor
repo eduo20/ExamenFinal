@@ -73,11 +73,11 @@
 </div>
 
 @code {
-    // Lista unificada para meter todos los tipos de productos juntos
+
     private List<Productos> listaGeneral = new List<Productos>();
     private int totalProductos = 0;
 
-    // OnInitialized se ejecuta automáticamente cuando se entra a la pantalla
+
     protected override void OnInitialized()
     {
         CargarDatosDesdeJson();
@@ -85,15 +85,12 @@
 
     private void CargarDatosDesdeJson()
     {
-        // 1. Jalamos el objeto contenedor con las 3 listas independientes
         ListaProductos datosJson = servicio.ObtenerListas();
 
-        // 2. Calculamos el total sumando el Count de cada una (Puntos de la etiqueta)
         totalProductos = datosJson.Bebidas.Count +
                          datosJson.PlatoFuerte.Count +
                          datosJson.Postres.Count;
 
-        // 3. Vaciamos y unificamos todo en nuestra lista general de tipo "Productos"
         listaGeneral = new List<Productos>();
         listaGeneral.AddRange(datosJson.Bebidas);
         listaGeneral.AddRange(datosJson.PlatoFuerte);
