@@ -9,5 +9,13 @@
       "precio": 100
     }
   ],
-  "Postres": []
+  "Postres": [
+    {
+      "azucar": true,
+      "Tipoporcion1": 0,
+      "codigoproducto": "LDKW",
+      "nombreproducto": "Rompe estomagos",
+      "precio": 100
+    }
+  ]
 }
