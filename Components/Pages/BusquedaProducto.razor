@@ -106,25 +106,25 @@
     private string criterioSeleccionado = "Nombre";
     private string textoBusqueda = string.Empty;
 
-    // Listado independiente para almacenar sólo las coincidencias
+
     private List<Productos> resultadosBusqueda = new List<Productos>();
     private bool mostrarMensajeNoResultados = false;
 
     private void EjecutarBusqueda()
     {
-        // Reiniciamos estados de control
+
         mostrarMensajeNoResultados = false;
         resultadosBusqueda.Clear();
 
         if (string.IsNullOrWhiteSpace(textoBusqueda))
         {
-            return; // Si está vacío, no hace nada
+            return; 
         }
 
-        // 1. Cargar todas las listas del JSON
+
         ListaProductos datosJson = servicio.ObtenerListas();
 
-        // 2. Unificar temporalmente en una lista general para buscar sobre todo el universo de datos
+
         List<Productos> todoElInventario = new List<Productos>();
         todoElInventario.AddRange(datosJson.Bebidas);
         todoElInventario.AddRange(datosJson.PlatoFuerte);
@@ -132,7 +132,7 @@
 
         string terminoALower = textoBusqueda.ToLower().Trim();
 
-        // 3. Filtrar usando LINQ según el criterio seleccionado
+
         if (criterioSeleccionado == "Nombre")
         {
             resultadosBusqueda = todoElInventario
@@ -146,7 +146,7 @@
                 .ToList();
         }
 
-        // 4. Activar bandera de mensaje de error si la búsqueda quedó vacía
+
         if (resultadosBusqueda.Count == 0)
         {
             mostrarMensajeNoResultados = true;
