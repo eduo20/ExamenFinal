@@ -1,0 +1,155 @@
+﻿@page "/buscar-productos"
+@using ExamenFinal.Models
+@using ExamenFinal.Services
+@inject ProductosServices servicio
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h3 class="mb-0">🔍 Buscar Productos</h3>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-4">
+                        <label class="form-label font-weight-bold">Seleccione Criterio:</label>
+                        <select class="form-select" @bind="criterioSeleccionado">
+                            <option value="Nombre">Nombre del Producto</option>
+                            <option value="Codigo">Código Único</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label font-weight-bold">Texto de Búsqueda:</label>
+                        <input type="text" class="form-control" @bind="textoBusqueda" placeholder="Escriba aquí para buscar..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-primary w-100" @onclick="EjecutarBusqueda">
+                            Buscar Producto
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">Resultados de la Búsqueda</h4>
+        </div>
+        <div class="card-body p-0">
+
+            @if (mostrarMensajeNoResultados)
+            {
+                <div class="alert alert-warning m-3" role="alert">
+                    ⚠️ <strong>Sin coincidencias:</strong> No se encontraron productos con el criterio ingresado. Intente con otro término.
+                </div>
+            }
+            else if (resultadosBusqueda.Count == 0)
+            {
+                <div class="text-center text-muted p-4">
+                    Realice una búsqueda para desplegar los productos aquí.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Precio Base</th>
+                                <th>Detalles de Categoría</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var prod in resultadosBusqueda)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-secondary">@prod.codigoproducto</span></td>
+                                    <td><strong>@prod.nombreproducto</strong></td>
+                                    <td>Q @prod.precio</td>
+                                    <td>
+                                        @if (prod is Bebidas b)
+                                        {
+                                            <span class="text-info font-weight-bold">🥤 Bebida</span>
+                                            <span class="text-muted"> • @b.medida ml • Tipo: @b.tipobebida1</span>
+                                        }
+                                        else if (prod is PlatoFuerte pf)
+                                        {
+                                            <span class="text-warning font-weight-bold">🍖 Plato Fuerte</span>
+                                            <span class="text-muted"> • Carne: @pf.Carne • Acompañamiento: @pf.Acompaniamiento1</span>
+                                        }
+                                        else if (prod is Postres po)
+                                        {
+                                            <span class="text-success font-weight-bold">🍰 Postre</span>
+                                            <span class="text-muted"> • Azúcar: @(po.azucar ? "Sí" : "No") • Porción: @po.Tipoporcion1</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private string criterioSeleccionado = "Nombre";
+    private string textoBusqueda = string.Empty;
+
+    // Listado independiente para almacenar sólo las coincidencias
+    private List<Productos> resultadosBusqueda = new List<Productos>();
+    private bool mostrarMensajeNoResultados = false;
+
+    private void EjecutarBusqueda()
+    {
+        // Reiniciamos estados de control
+        mostrarMensajeNoResultados = false;
+        resultadosBusqueda.Clear();
+
+        if (string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            return; // Si está vacío, no hace nada
+        }
+
+        // 1. Cargar todas las listas del JSON
+        ListaProductos datosJson = servicio.ObtenerListas();
+
+        // 2. Unificar temporalmente en una lista general para buscar sobre todo el universo de datos
+        List<Productos> todoElInventario = new List<Productos>();
+        todoElInventario.AddRange(datosJson.Bebidas);
+        todoElInventario.AddRange(datosJson.PlatoFuerte);
+        todoElInventario.AddRange(datosJson.Postres);
+
+        string terminoALower = textoBusqueda.ToLower().Trim();
+
+        // 3. Filtrar usando LINQ según el criterio seleccionado
+        if (criterioSeleccionado == "Nombre")
+        {
+            resultadosBusqueda = todoElInventario
+                .Where(p => p.nombreproducto.ToLower().Contains(terminoALower))
+                .ToList();
+        }
+        else if (criterioSeleccionado == "Codigo")
+        {
+            resultadosBusqueda = todoElInventario
+                .Where(p => p.codigoproducto.ToLower().Contains(terminoALower))
+                .ToList();
+        }
+
+        // 4. Activar bandera de mensaje de error si la búsqueda quedó vacía
+        if (resultadosBusqueda.Count == 0)
+        {
+            mostrarMensajeNoResultados = true;
+        }
+    }
+}
